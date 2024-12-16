@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Административная панель</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <style>
+    body {
+      background-image: url('/static/images/2.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      filter: brightness(0.6); /* Затемнение */
+    }
+    h1, h4, h5, th, tr {
+      color: white;
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark justify-content-between" style="background-color: #121c33">
+  <div class="container-fluid">
+    <a class="navbar-brand" th:href="@{/admin_dashboard}">Система мероприятий</a>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link active" aria-current="page" th:href="@{/admin_dashboard}">Мероприятия</a></li>
+        <li class="nav-item"><a class="nav-link active" aria-current="page" th:href="@{/admin/venues}">Локации</a></li>
+        <li class="nav-item"><a class="nav-link active" aria-current="page" th:href="@{/admin/sessions}">Сессии</a></li>
+        <li class="nav-item"><a class="nav-link active" aria-current="page" th:href="@{/admin/users}">Пользователи</a></li>
+        <li class="nav-item"><a class="nav-link active" aria-current="page" th:href="@{/logout}">Выход</a></li>
+      </ul>
+      <form class="form" th:action="@{/admin_dashboard}">
+        <label for="keyword" class="form-label">Поиск:</label>
+        <input type="search" class="form-control-sm" name="keyword" id="keyword" th:value="${keyword}" placeholder="Поиск" />
+        <input type="submit" class="btn btn-outline-dark btn-sm" style="background-color: lightskyblue" value="Поиск" />
+        <input type="button" class="btn btn-outline-dark btn-sm" style="background-color: lightskyblue" value="Очистить" id="btnClear" onclick="clearSearch()" />
+      </form>
+    </div>
+  </div>
+</nav>
+<br /><br />
+<div class="wrapper" style="max-width: 1200px; margin: 0 auto">
+  <blockquote class="blockquote text-center"><h1>Мероприятия</h1></blockquote>
+  <table id="eventsTable" class="table table-striped table-hover">
+    <thead>
+    <tr>
+      <th scope="col" onclick="sortTable(0)" style="cursor: pointer">ID</th>
+      <th scope="col">Название</th>
+      <th scope="col">Категория</th>
+      <th scope="col">Дата</th>
+      <th scope="col" onclick="sortTable(4)" style="cursor: pointer">Место проведения</th>
+      <th scope="col">Действия</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="event : ${events}">
+      <th scope="row" class="text-black" th:text="${event.id}">ID</th>
+      <td th:text="${event.name}">Название отсутствует</td>
+      <td th:text="${event.eventType}">Категория отсутствует</td>
+      <td th:if="${event.startDate != null and event.endDate != null}" th:text="${#dates.format(event.startDate, 'dd-MM-yyyy')} + ' - ' + ${#dates.format(event.endDate, 'dd-MM-yyyy')}">Дата отсутствует</td>
+      <td th:unless="${event.startDate != null and event.endDate != null}">Дата отсутствует</td>
+      <td th:text="${event.location}">Место отсутствует</td>
+      <td>
+        <a th:href="@{'/edit_event/'+${event.id}}"><button class="btn btn-outline-dark" style="background-color: #87fa96">Редактировать</button></a>
+        <a th:href="@{'/delete_event/'+${event.id}}"><button class="btn btn-outline-dark" style="background-color: #ff7b7b">Удалить</button></a>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <blockquote class="blockquote text-center">
+    <a href="/new_event"><button class="btn btn-outline-dark" style="background-color: lightskyblue">Добавить мероприятие</button></a>
+  </blockquote>
+</div>
+<script>
+  function clearSearch() {
+    window.location.href = "[[@{/admin_dashboard}]]";
+  }
+
+  function sortTable(n) {
+    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+    table = document.getElementById("eventsTable");
+    switching = true;
+    dir = "asc";
+    while (switching) {
+      switching = false;
+      rows = table.rows;
+      for (i = 1; i < (rows.length - 1); i++) {
+        shouldSwitch = false;
+        x = rows[i].getElementsByTagName("TD")[n];
+        y = rows[i + 1].getElementsByTagName("TD")[n];
+        if (dir == "asc") {
+          if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+            shouldSwitch = true;
+            break;
+          }
+        } else if (dir == "desc") {
+          if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+            shouldSwitch = true;
+            break;
+          }
+        }
+      }
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+        switchcount++;
+      } else {
+        if (switchcount == 0 && dir == "asc") {
+          dir = "desc";
+          switching = true;
+        }
+      }
+    }
+  }
+</script>
+</body>
+</html>
